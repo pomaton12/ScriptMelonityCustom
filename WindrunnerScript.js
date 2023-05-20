@@ -23,6 +23,7 @@ eval(`
 
 	// Definición de la función OnUpdate
 	let previousEnemyPositions = {};
+	let bkbEnemies = {};
 	//===============================
 	AutoSaverWindrunner.OnUpdate = () => {
 	  if (localHero && isUiEnabled) {
@@ -52,7 +53,7 @@ eval(`
 		  let gale_force = localHero.GetAbilityByIndex(3);
 		  if (gale_force && gale_force.IsExist() && gale_force.CanCast()) {
 		    enemies = localHero.GetHeroesInRadius(1000, Enum.TeamType.TEAM_ENEMY);
-		    for (let enemy of enemies {
+		    for (let enemy of enemies) {
 		      let enemyId = enemy.GetPlayerID();
 		      let isAttacking = enemy.IsAttacking() && enemy.GetAttackTarget() === localHero;
 		      let currentPosition = enemy.GetAbsOrigin();
@@ -83,11 +84,34 @@ eval(`
 			// Agregar condición para evitar lanzar gale force si el enemigo tiene activado bkb
 			if (enemy.HasModifier("modifier_black_king_bar_immune") === false) {
 			  gale_force.CastPosition(vec1.add(pushDirection));
+			} else {
+			  // Guardar información del enemigo con BKB activado
+			  bkbEnemies[enemyId] = {
+			    enemy: enemy,
+			    endTime: GameRules.GetGameTime() + enemy.FindModifierByName("modifier_black_king_bar_immune").GetRemainingTime()
+			  };
 			}
 		      }
 		    }
 		  }
 		}
+	      }
+	    }
+
+	    // Verificar si los enemigos con BKB activado han terminado el modificador
+	    for (let enemyId in bkbEnemies) {
+	      let enemyInfo = bkbEnemies[enemyId];
+	      let enemy = enemyInfo.enemy;
+	      let endTime = enemyInfo.endTime;
+	      if (GameRules.GetGameTime() >= endTime) {
+		let gale_force = localHero.GetAbilityByIndex(3);
+		if (gale_force && gale_force.IsExist() && gale_force.CanCast()) {
+		  let vec1 = localHero.GetAbsOrigin();
+		  let vec2 = enemy.GetAbsOrigin();
+		  let pushDirection = vec2.sub(vec1).Normalized();
+		  gale_force.CastPosition(vec1.add(pushDirection));
+		}
+		delete bkbEnemies[enemyId];
 	      }
 	    }
 	  }
