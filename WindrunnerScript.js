@@ -8,7 +8,7 @@
 /***/ (() => {
 
 eval(`
-	// Definición del objeto AutoSaverAlchemist
+	// Definición del objeto AutoSaverWindrunner
 	const AutoSaverWindrunner = {};
 
 	// Declaración de la variable localHero
@@ -33,11 +33,11 @@ eval(`
 	      if (modifier.GetName() === 'modifier_windrunner_focusfire') {
 		const remainingTime = modifier.GetRemainingTime();
 		if (remainingTime <= 20) {
-		// Nueva condición para activar winrun siempre
-			let windrun = localHero.GetAbilityByIndex(2);
-			if (windrun && windrun.IsExist() && windrun.CanCast()) {
-			  windrun.CastNoTarget();
-			}
+		  // Nueva condición para activar winrun siempre
+		  let windrun = localHero.GetAbilityByIndex(2);
+		  if (windrun && windrun.IsExist() && windrun.CanCast()) {
+		    windrun.CastNoTarget();
+		  }
 		  // Nueva condición para activar BKB si el enemigo tiene activado Blade Mail
 		  let enemies = localHero.GetHeroesInRadius(1000, Enum.TeamType.TEAM_ENEMY);
 		  for (let enemy of enemies) {
@@ -52,7 +52,7 @@ eval(`
 		  let gale_force = localHero.GetAbilityByIndex(3);
 		  if (gale_force && gale_force.IsExist() && gale_force.CanCast()) {
 		    enemies = localHero.GetHeroesInRadius(1000, Enum.TeamType.TEAM_ENEMY);
-		    for (let enemy of enemies) {
+		    for (let enemy of enemies {
 		      let enemyId = enemy.GetPlayerID();
 		      let isAttacking = enemy.IsAttacking() && enemy.GetAttackTarget() === localHero;
 		      let currentPosition = enemy.GetAbsOrigin();
@@ -79,7 +79,11 @@ eval(`
 			} else {
 			  continue;
 			}
-			gale_force.CastPosition(vec1.add(pushDirection));
+
+			// Agregar condición para evitar lanzar gale force si el enemigo tiene activado bkb
+			if (enemy.HasModifier("modifier_black_king_bar_immune") === false) {
+			  gale_force.CastPosition(vec1.add(pushDirection));
+			}
 		      }
 		    }
 		  }
@@ -90,12 +94,12 @@ eval(`
 	};
 	// Definición de la función OnScriptLoad
 	AutoSaverWindrunner.OnScriptLoad = AutoSaverWindrunner.OnGameStart = () => {
-		localHero = EntitySystem.GetLocalHero();
+	  localHero = EntitySystem.GetLocalHero();
 	};
 
 	// Definición de la función OnGameEnd
 	AutoSaverWindrunner.OnGameEnd = () => {
-		localHero = null;
+	  localHero = null;
 	};
 
 	// Registro del script
