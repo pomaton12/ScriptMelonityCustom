@@ -31,6 +31,8 @@ eval(`
 	      return;
 	      
 	    const attackTarget = localHero.GetAttackTarget();
+	    console.log('Objetivo de ataque actual:', attackTarget);	
+	    
 	    const modifiers = localHero.GetModifiers();
 	    for (let modifier of modifiers) {
 	      if (modifier.GetName() === 'modifier_windrunner_focusfire') {
