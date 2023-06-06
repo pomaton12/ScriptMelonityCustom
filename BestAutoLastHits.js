@@ -170,50 +170,54 @@ eval(`
 
 
 	BestAutoLastHits.OnUpdate = () => {
-		if (!localHero || !enableToggle.GetValue()) {
-			return;
-		}
+		if (localHero && enableToggle.GetValue()) {
+
 		
-		if (Input.IsKeyDown(KeyBindLastHit.GetValue())) {
-			const attackRadius = 500;
-			
-			
-			DrawRadiusActionParticle(localHero);
-			
-			if (DisplayModeHitEnemy === 0) {
-				const closestEnemyHero = getClosestEnemyHero(attackRadius);
-
-				if (closestEnemyHero) {
-					if (Engine.OnceAt(0.2)) {
-						myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestEnemyHero, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
-					}
-				}
-			}
-
-
-			const closestCreep = getClosestLowHealthCreep(localHero);
-			
-			if (closestCreep) {
+			if (Input.IsKeyDown(KeyBindLastHit.GetValue())) {
+				const attackRadius = 500;
 				
-				if (Engine.OnceAt(0.2)) {
-					myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestCreep, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
-				}
-			} else {
-				if(Input.GetWorldCursorPos() == localHero.GetAbsOrigin()){
-					
-				} else {
-					if (Engine.OnceAt(0.2)) {
-						SendOrderMovePos(Input.GetWorldCursorPos());
+				
+				DrawRadiusActionParticle(localHero);
+				
+				if (DisplayModeHitEnemy === 0) {
+					const closestEnemyHero = getClosestEnemyHero(attackRadius);
+
+					if (closestEnemyHero) {
+						if (Engine.OnceAt(0.2)) {
+							myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestEnemyHero, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
+						}
 					}
 				}
-			}
 
-		} else {
-			
-			if (createDrawRadius > 0) {
-				Particle_ID.Destroy();
-				Particle_ID = null;
-				createDrawRadius = 0;
+
+				const closestCreep = getClosestLowHealthCreep(localHero);
+				
+				if (closestCreep) {
+					
+					if (Engine.OnceAt(0.2)) {
+						myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestCreep, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
+					}
+				} else {
+					const RangeNoMove = 150;
+					const vect1Pos = localHero.GetAbsOrigin();
+					const vect1Pos = Input.GetWorldCursorPos();
+					const DistanciaOriWolrd = vect1Pos.Distance(vect1Pos);
+					if(DistanciaOriWolrd <= RangeNoMove){
+						
+					} else {
+						if (Engine.OnceAt(0.1)) {
+							SendOrderMovePos(Input.GetWorldCursorPos());
+						}
+					}
+				}
+
+			} else {
+				
+				if (createDrawRadius > 0) {
+					Particle_ID.Destroy();
+					Particle_ID = null;
+					createDrawRadius = 0;
+				}
 			}
 		}
 	};
