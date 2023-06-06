@@ -78,8 +78,8 @@ eval(`
 
 		if (heroName === "npc_dota_hero_templar_assassin") {
 			const AbilityTA = localHero.GetAbilityByIndex(0);
-			additionalDamage += localHero.GetDamage(AbilityTA);
-			console.log("Daño adicional = ",additionalDamage);
+			additionalDamage += AbilityTA.GetDamage();
+			console.log("Daño adicional = ",AbilityTA.GetDamage());
 		}
 
 		return additionalDamage;
