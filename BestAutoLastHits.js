@@ -18,10 +18,7 @@ eval(`
 
 	const path_ = ['Creeps', 'Best AutoLastHit'];
 
-	let enableToggle = Menu.AddToggle(path_, 'Enable', true)
-	    .OnChange(state => {
-        enableToggle = state.newValue;
-    })
+	let enableToggle = Menu.AddToggle(path_, 'Enable', true);
 	
 	let KeyBindLastHit = Menu.AddKeyBind(path_, 'AutoLastHits', Enum.ButtonCode.KEY_NONE);
 	
