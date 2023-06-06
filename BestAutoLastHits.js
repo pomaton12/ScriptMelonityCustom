@@ -71,6 +71,19 @@ eval(`
 	    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, vector, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero, false, true);
 	}
 		
+	function getAdditionalDamage(localHero) {
+		let additionalDamage = 0;
+
+		const heroName = localHero.GetUnitName();
+
+		if (heroName === "npc_dota_hero_templar_assassin") {
+			const AbilityTA = localHero.GetAbilityByIndex(0);
+				additionalDamage += AbilityTA.GetDamage();
+			}
+		}
+
+		return additionalDamage;
+	}
 	
 	function getClosestLowHealthCreep(localHero) {
 		
@@ -168,19 +181,6 @@ eval(`
 		
 	}
 	
-	function getAdditionalDamage(localHero) {
-		let additionalDamage = 0;
-
-		const heroName = localHero.GetUnitName();
-
-		if (heroName === "npc_dota_hero_templar_assassin") {
-			const AbilityTA = localHero.GetAbilityByIndex(0);
-				additionalDamage += AbilityTA.GetDamage();
-			}
-		}
-
-		return additionalDamage;
-	}
 
 
 	BestAutoLastHits.OnUpdate = () => {
