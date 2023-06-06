@@ -194,9 +194,9 @@ eval(`
 				
 				if (closestCreep) {
 					
-					//if (Engine.OnceAt(0.2)) {
+					if (Engine.OnceAt(0.1)) {
 						myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestCreep, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
-					//}
+					}
 				} else {
 					let RangeNoMove = 150;
 					let vect1Pos = localHero.GetAbsOrigin();
