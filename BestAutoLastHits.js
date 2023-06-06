@@ -198,10 +198,11 @@ eval(`
 						myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestCreep, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
 					}
 				} else {
-					const RangeNoMove = 150;
-					const vect1Pos = localHero.GetAbsOrigin();
-					const vect1Pos = Input.GetWorldCursorPos();
-					const DistanciaOriWolrd = vect1Pos.Distance(vect1Pos);
+					let RangeNoMove = 150;
+					let vect1Pos = localHero.GetAbsOrigin();
+					let vect1Pos = Input.GetWorldCursorPos();
+					let DistanciaOriWolrd = vect1Pos.Distance(vect1Pos);
+					
 					if(DistanciaOriWolrd <= RangeNoMove){
 						
 					} else {
