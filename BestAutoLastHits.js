@@ -200,8 +200,8 @@ eval(`
 				} else {
 					let RangeNoMove = 150;
 					let vect1Pos = localHero.GetAbsOrigin();
-					let vect1Pos = Input.GetWorldCursorPos();
-					let DistanciaOriWolrd = vect1Pos.Distance(vect1Pos);
+					let vect2Pos = Input.GetWorldCursorPos();
+					let DistanciaOriWolrd = vect1Pos.Distance(vect2Pos);
 					
 					if(DistanciaOriWolrd <= RangeNoMove){
 						
