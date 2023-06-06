@@ -116,13 +116,8 @@ eval(`
 			const attackTime = localHero.GetAttackTime();
 
 			// Estimar cuándo el objetivo estará en el rango de ataque del héroe
-			const estimatedAttackTime = travelTime + attackTime;
-			
-			// Calcular el tiempo estimado para que el objetivo esté dentro del rango de ataque del héroe
-			let estimatedAttackRangeTime = estimatedAttackTime;
-
-			
-			const HPcreepActual = Math.floor((creep.GetHealth() + creep.GetHealthRegen()*estimatedAttackTime)*CreepArmor);
+			let estimatedAttackTime = travelTime + attackTime;
+						
 			
 			// My Damage
 			let actualDamage = localHero.GetTrueDamage();
@@ -131,12 +126,13 @@ eval(`
 				const projectileSpeed = localHero.GetProjectileSpeed();
 				const projectileTravelTime = distance / projectileSpeed;
 				actualDamage += Math.floor((localHero.GetTrueMaximumDamage() - localHero.GetTrueDamage()) / 2);
-				estimatedAttackRangeTime += projectileTravelTime;
+				estimatedAttackTime += projectileTravelTime;
 			} else {
 				actualDamage += Math.floor((localHero.GetTrueMaximumDamage() - localHero.GetTrueDamage()) / 2);
 			}
 
-			if (HPcreepActual <= actualDamage && estimatedAttackRangeTime < 1.0) {
+			const HPcreepActual = Math.floor((creep.GetHealth() + creep.GetHealthRegen()*estimatedAttackTime)*CreepArmor);
+			if (HPcreepActual <= actualDamage ) {
 				closestCreep = creep;
 			}
 		}
