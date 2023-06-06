@@ -118,6 +118,10 @@ eval(`
 			// Estimar cuándo el objetivo estará en el rango de ataque del héroe
 			const estimatedAttackTime = travelTime + attackTime;
 			
+			// Calcular el tiempo estimado para que el objetivo esté dentro del rango de ataque del héroe
+			let estimatedAttackRangeTime = estimatedAttackTime;
+
+			
 			const HPcreepActual = Math.floor((creep.GetHealth() + creep.GetHealthRegen()*estimatedAttackTime)*CreepArmor);
 			
 			// My Damage
