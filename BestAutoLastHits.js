@@ -199,9 +199,13 @@ eval(`
 					myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestCreep, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
 				}
 			} else {
-				if (Engine.OnceAt(0.2)) {
-					SendOrderMovePos(Input.GetWorldCursorPos());
-				}						
+				if(Input.GetWorldCursorPos() == localHero.GetAbsOrigin()){
+					
+				} else {
+					if (Engine.OnceAt(0.2)) {
+						SendOrderMovePos(Input.GetWorldCursorPos());
+					}
+				}
 			}
 
 		} else {
