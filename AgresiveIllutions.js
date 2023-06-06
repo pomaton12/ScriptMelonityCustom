@@ -19,34 +19,36 @@ eval(`
 
 	let enableToggle = Menu.AddToggle(path_, 'Enable', true);
 	let attackHeroToggle = Menu.AddToggle(path_, 'Attack Hero', true);
+	attackHeroToggle.SetImage('panorama/images/spellicons/spectre_haunt_png.vtex_c');
 	let pushLineCreepsToggle = Menu.AddToggle(path_, 'Push Line Creeps', true);
+	pushLineCreepsToggle.SetImage('panorama/images/spellicons/action_attackcreep_png.vtex_c');
 
-function getIllusions() {
-    if (illusionList.length < 5) {
-        illusionList = [];
-        let heroes = EntitySystem.GetHeroesList();
-        if (heroes || heroes.length > 0) {
-                 
-			if (heroes) {
-				for (let hero of heroes) {
-					if (hero && hero.IsIllusion() && !hero.IsMeepoClone() && hero.IsAlive() &&
-						!hero.IsDormant() && hero.IsSameTeam(localHero)) {
-						illusionList.push(hero);
+	function getIllusions() {
+		if (illusionList.length < 5) {
+			illusionList = [];
+			let heroes = EntitySystem.GetHeroesList();
+			if (heroes || heroes.length > 0) {
+					 
+				if (heroes) {
+					for (let hero of heroes) {
+						if (hero && hero.IsIllusion() && !hero.IsMeepoClone() && hero.IsAlive() &&
+							!hero.IsDormant() && hero.IsSameTeam(localHero)) {
+							illusionList.push(hero);
+						}
 					}
 				}
+			} else {
+				return;  
 			}
+			
 		} else {
-			return;  
+			// Elimina las ilusiones no válidas de la lista
+			illusionList = illusionList.filter(illusion => illusion && !illusion.IsDormant() && illusion.IsAlive());
 		}
-		
-    } else {
-        // Elimina las ilusiones no válidas de la lista
-        illusionList = illusionList.filter(illusion => illusion && !illusion.IsDormant() && illusion.IsAlive());
-    }
-}
+	}
 
 
-	function getClosestIllusion(vector, radius = 2000) {
+	function getClosestIllusion(vector, radius = 1500) {
 		let closestIllusion = null;
 		let closestDistance = Number.MAX_VALUE;
 
@@ -106,55 +108,55 @@ function getIllusions() {
 	}
 
 	IllusionsAgresive.OnUpdate = () => {
-	    if (!localHero || !enableToggle.GetValue()) {
-		return;
-	    }
+	    if (localHero && enableToggle.GetValue()) {
 
-	    getIllusions();
 
-	    const illusion = getClosestIllusion(Input.GetWorldCursorPos());
+			getIllusions();
 
-	    const attackRadius = 1500;
+			const illusion = getClosestIllusion(Input.GetWorldCursorPos());
 
-	    if (attackHeroToggle.GetValue()) {
-		const closestEnemyHero = getClosestEnemyHero(attackRadius);
+			const attackRadius = 1500;
 
-		if (closestEnemyHero) {
-		    if (illusion) {
-			if (Engine.OnceAt(0.2)) {
-			    myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestEnemyHero, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, illusion, false, true);
-			}
-		    }
-		}
-	    }
-
-	    if (pushLineCreepsToggle.GetValue()) {
+			if (attackHeroToggle.GetValue()) {
 			const closestEnemyHero = getClosestEnemyHero(attackRadius);
 
-			if (!closestEnemyHero) {
-				if (illusion != null) {
-					const laneCreeps = illusion.GetUnitsInRadius(2000, Enum.TeamType.TEAM_ENEMY);
-				
-					if (laneCreeps || laneCreeps.length  > 0) {
+			if (closestEnemyHero) {
+				if (illusion) {
+				if (Engine.OnceAt(0.2)) {
+					myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestEnemyHero, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, illusion, false, true);
+				}
+				}
+			}
+			}
 
-						const closestLaneCreep = getClosestCreep(laneCreeps, localHero.GetAbsOrigin());
+			if (pushLineCreepsToggle.GetValue()) {
+				const closestEnemyHero = getClosestEnemyHero(attackRadius);
 
-						if (closestLaneCreep) {
-							if (illusion) {
-								if (Engine.OnceAt(0.2)) {
-								myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, null, closestLaneCreep.GetAbsOrigin(), null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, illusion, false, true);
+				if (!closestEnemyHero) {
+					if (illusion != null) {
+						const laneCreeps = illusion.GetUnitsInRadius(2000, Enum.TeamType.TEAM_ENEMY);
+					
+						if (laneCreeps || laneCreeps.length  > 0) {
+
+							const closestLaneCreep = getClosestCreep(laneCreeps, localHero.GetAbsOrigin());
+
+							if (closestLaneCreep) {
+								if (illusion) {
+									if (Engine.OnceAt(0.2)) {
+									myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, null, closestLaneCreep.GetAbsOrigin(), null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, illusion, false, true);
+									}
 								}
 							}
+						} else {
+							return;
 						}
+						
 					} else {
 						return;
-					}
-					
-				} else {
-					return;
-				}												
+					}												
+				}
 			}
-	    }
+		}
 	};
 
 	IllusionsAgresive.OnScriptLoad = IllusionsAgresive.OnGameStart = () => {
