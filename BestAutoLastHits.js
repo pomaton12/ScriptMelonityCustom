@@ -7,7 +7,7 @@
   \**********************************/
 /***/ (() => {
 
-eval(`
+//eval(`
 
 	const BestAutoLastHits = {};
 
@@ -120,7 +120,7 @@ eval(`
 						
 			
 			// My Damage
-			let actualDamage = localHero.GetTrueDamage();
+			let actualDamage = localHero.GetTrueDamage() + getAdditionalDamage(localHero);
 
 			if (localHero.IsRanged()) {
 				const projectileSpeed = localHero.GetProjectileSpeed();
@@ -166,6 +166,20 @@ eval(`
 			}
 		}
 		
+	}
+	
+	function getAdditionalDamage(localHero) {
+		let additionalDamage = 0;
+
+		const heroName = localHero.GetUnitName();
+
+		if (heroName === "npc_dota_hero_templar_assassin") {
+			const AbilityTA = localHero.GetAbilityByIndex(0);
+				additionalDamage += AbilityTA.GetDamage();
+			}
+		}
+
+		return additionalDamage;
 	}
 
 
