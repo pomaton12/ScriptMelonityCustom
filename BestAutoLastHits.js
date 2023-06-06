@@ -161,7 +161,7 @@ eval(`
 			}
 			
 			
-			if (futureCreepHealth <= actualDamage) {
+			if (HPcreepActual <= actualDamage) {
 				console.log("AR = ", actualDamage," HP = ",HPcreepActual);
 				closestCreep = creep;
 				//closestCreepHealth = futureCreepHealth;
