@@ -1,4 +1,3 @@
-
 /******/ (() => { // webpackBootstrap 
 /******/ 	var __webpack_modules__ = ({
 
@@ -136,22 +135,36 @@ eval(`
 		let closestCreepHealth = Number.MAX_VALUE;
 		
 		for (let i = 0; i < laneCreeps.length; i++) {
+			// Creep HP Calc
 			const creep = laneCreeps[i];
-			const HPcreepActual = Math.floor(creep.GetHealth() + creep.GetHealthRegen());
-			const attackTravelTime = calculateAttackTravelTime(localHero, creep);
+			const CreepArmor = creep.GetBonusPhysicalArmor()+creep.GetPhysicalArmorValue();
+			
+			//condition exisarmor
+			if (CreepArmor >= 0){
+				CreepArmor = 1+((0.06 * CreepArmor) / (1 + 0.06 * CreepArmor));
+			} else{
+				CreepArmor = 0.94;
+			}
+			
+			const HPcreepActual = Math.floor((creep.GetHealth() + creep.GetHealthRegen())*CreepArmor);
+			
+			
+			// My Damage
+			//const attackTravelTime = calculateAttackTravelTime(localHero, creep);
+			
 			const actualDamage = localHero.GetTrueDamage() + Math.floor((localHero.GetTrueMaximumDamage() - localHero.GetTrueDamage()) / 2); // SUMAR HABILIDADES
-			const HeroDamage = Math.floor(localHero.GetDamageMultiplierVersus(creep) * actualDamage * localHero.GetArmorDamageMultiplier(creep));
-			const HeroDamagefINAL = HeroDamage+attackTravelTime*actualDamage;
-			const futureCreepHealth = HPcreepActual;
+			//const HeroDamagefINAL = HeroDamage+attackTravelTime*actualDamage;
+			//const futureCreepHealth = HPcreepActual;
 			
 			if(HPcreepActual < 2*actualDamage){
 				//localHero.MoveTo(creep.GetAbsOrigin());
 			}
 			
-			console.log("AR = ", actualDamage," AU = ",HeroDamagefINAL," HP = ",HPcreepActual);
-			if (futureCreepHealth <= HeroDamagefINAL && futureCreepHealth < closestCreepHealth) {
+			
+			if (futureCreepHealth <= actualDamage) {
+				console.log("AR = ", actualDamage," HP = ",HPcreepActual);
 				closestCreep = creep;
-				closestCreepHealth = futureCreepHealth;
+				//closestCreepHealth = futureCreepHealth;
 			}
 		}
 
