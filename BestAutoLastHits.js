@@ -18,7 +18,10 @@ eval(`
 
 	const path_ = ['Creeps', 'Best AutoLastHit'];
 
-	let enableToggle = Menu.AddToggle(path_, 'Enable', true);
+	let enableToggle = Menu.AddToggle(path_, 'Enable', true)
+	    .OnChange(state => {
+        enableToggle = state.newValue;
+    })
 	
 	let KeyBindLastHit = Menu.AddKeyBind(path_, 'AutoLastHits', Enum.ButtonCode.KEY_NONE);
 	
@@ -191,9 +194,9 @@ eval(`
 				
 				if (closestCreep) {
 					
-					if (Engine.OnceAt(0.2)) {
+					//if (Engine.OnceAt(0.2)) {
 						myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, closestCreep, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, localHero, false, true);
-					}
+					//}
 				} else {
 					let RangeNoMove = 150;
 					let vect1Pos = localHero.GetAbsOrigin();
