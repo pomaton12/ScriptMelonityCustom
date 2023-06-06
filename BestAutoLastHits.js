@@ -137,7 +137,7 @@ eval(`
 		for (let i = 0; i < laneCreeps.length; i++) {
 			// Creep HP Calc
 			const creep = laneCreeps[i];
-			const CreepArmor = creep.GetBonusPhysicalArmor()+creep.GetPhysicalArmorValue();
+			const CreepArmor = creep.GetPhysicalArmorValue();
 			
 			//condition exisarmor
 			if (CreepArmor >= 0){
