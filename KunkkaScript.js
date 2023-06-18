@@ -1,187 +1,129 @@
-/******/ (() => { // webpackBootstrap 
+/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/StornSpiritAbuse.ts":
-/*!**********************************!*\
-  !*** ./src/StornSpiritAbuse.ts ***!
-  \**********************************/
+/***/ "./src/AutoStealKunkka.ts":
+/*!******************************!*\
+  !*** ./src/AutoStealKunkka.ts ***!
+  \******************************/
 /***/ (() => {
 
 eval(`
-	const StornSpiritAbuse = {};
+	const AutoStealKunkka = {};
+	let local;
+	let localPlayer;
+	let TorrentStorm;
+	let TidalWave;
+	let enemyHeroes;
+	let torrentStormTimer = null;
+	let lastUltimateCastTime = 0;
+	let tidalWaveCastAfterUltimate = false;
 
-	let localHero;
-	let myPlayer;
+	const path_ = ['Heroes', 'Strength', 'Kunkka'];
+	let isUiEnabled1 = Menu.AddToggle(path_, 'Torrent Storm Use', true);
+	isUiEnabled1.SetImage('panorama/images/spellicons/kunkka_torrent_storm_png.vtex_c');
 
+	let isUiEnabled2 = Menu.AddToggle(path_, 'Tidal Wave Use', true);
+	isUiEnabled2.SetImage('panorama/images/spellicons/kunkka_tidal_wave_png.vtex_c');
 
-	const path_ = ["Heroes", "Intelligence", "Storm Spirit"];
-	
-	let KeyBindOrderAgresive = Menu.AddKeyBind(path_, 'Agresive Ulti', Enum.ButtonCode.KEY_NONE);
-	let KeyBindOrderUltiTP = Menu.AddKeyBind(path_, 'Save Tp to base', Enum.ButtonCode.KEY_NONE);
-
-	KeyBindOrderAgresive.SetImage('panorama/images/spellicons/storm_spirit_ball_lightning_orchid_png.vtex_c');
-	KeyBindOrderUltiTP.SetImage('panorama/images/spellicons/storm_spirit/ti8_retro_immortal/storm_spirit_ball_lightning_orchid_retro_png.vtex_c');
-
-	function findSafePosition(localHero, searchRadius){
-		const heroPosition = localHero.GetAbsOrigin();
-		const enemyHeroes = localHero.GetHeroesInRadius(searchRadius, Enum.TeamType.TEAM_ENEMY);
-		let maxDistance = 0;
-		let safePosition = heroPosition;
-
-		for (let angle = 0; angle < 360; angle += 10) {
-			const dx = Math.cos(angle * (Math.PI / 180)) * searchRadius;
-			const dy = Math.sin(angle * (Math.PI / 180)) * searchRadius;
-			const candidatePosition = heroPosition.add(new Vector(dx, dy, 0));
-
-			const distanceToClosestEnemy = enemyHeroes.reduce((minDistance, enemy) => {
-				const distance = candidatePosition.Distance(enemy.GetAbsOrigin());
-				return Math.min(minDistance, distance);
-			}, Infinity);
-
-	
-			if (distanceToClosestEnemy > maxDistance) {
-				maxDistance = distanceToClosestEnemy;
-				safePosition = candidatePosition;
-			}
-		}
-
-		return safePosition;
-	}
-
-	function HeroFuntainSafePos(PlayerhER) {
-		let team = PlayerhER.GetTeamNum();
-		let safe = null;
-		if (team == 2) {
-			safe = new Vector(-6746.22, -6212.06, 384);
-		}
-		else if (team == 3) {
-			safe = new Vector(6700.91, 6136.91, 384);
-		}
-		return safe
-	}
-	
-	StornSpiritAbuse.OnUpdate = () => {
-
-		if (localHero && KeyBindOrderUltiTP.IsKeyDown()) {
-			if (localHero.GetUnitName() !== "npc_dota_hero_storm_spirit") {
+	AutoStealKunkka.OnUpdate = () => {
+		if (localHero && isUiEnabled1.GetValue()) {
+			// Verifica si el héroe local es Kunkka
+			if (localHero.GetUnitName() !== "npc_dota_hero_kunkka")
 				return;
+
+			// Si no se ha inicializado TorrentStorm, obtén la habilidad Torrent Storm de Kunkka
+			if (!TorrentStorm) {
+				TorrentStorm = localHero.GetAbilityByIndex(3);
 			}
-			
-			let Ultimate = localHero.GetAbilityByIndex(5);
-			let safePosition = localHero.GetAbsOrigin();
-			let FuntainSafePos = HeroFuntainSafePos(myPlayer);
-			
-			if (Engine.OnceAt(0.2)) {
-				let enemyHeroes = localHero.GetHeroesInRadius(500, Enum.TeamType.TEAM_ENEMY);				
-				// Encuentra la posición más segura
-				console.log(enemyHeroes);
-				if (enemyHeroes) {
-					safePosition = findSafePosition(localHero, 500);
-				} else {
-					safePosition = FuntainSafePos;
-					//safePosition = Input.GetWorldCursorPos();
-				}
-				
-				myPlayer.PrepareUnitOrders( Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,safePosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
-				//setTimeout(function() {}, 300);
-				//myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, null, safePosition, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero, false, true);
-				
-				//Ultimate.CastPosition(safePosition);
-				
-				let tpitem = localHero.GetItem('item_tpscroll', true);
-				if (tpitem && tpitem.CanCast()) {
-					//myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET,null,FuntainSafePos,tpitem,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
-					//tpitem.CastPosition(FuntainSafePos);
-				}
+
+			// Obtén la habilidad ultimate de Kunkka (Ghostship)
+			const Ghostship = localHero.GetAbilityByIndex(5);
+
+			// Verifica si el ultimate de Kunkka está en cooldown y si no hay un temporizador activo
+			if (Ghostship && Ghostship.GetCooldown() > 0 && !torrentStormTimer) {
+				// Genera un tiempo aleatorio entre 0 y 3000 milisegundos (3 segundos)
+				const randomDelay = Math.floor(Math.random() * 3000);
+
+				// Establece un temporizador para activar Torrent Storm dentro de los 3 segundos después
+				torrentStormTimer = setTimeout(() => {
+					// Si Torrent Storm se puede lanzar, actívalo
+					if (TorrentStorm.CanCast()) {
+						TorrentStorm.CastPosition(localHero.GetAbsOrigin());
+					}
+					// Limpia el temporizador
+					clearTimeout(torrentStormTimer);
+					torrentStormTimer = null;
+				}, randomDelay);
 			}
-	    }
+		}
 		
-		if (localHero && KeyBindOrderAgresive.IsKeyDown()) {
-			if (localHero.GetUnitName() !== "npc_dota_hero_storm_spirit") {
+		if (localHero && isUiEnabled2.GetValue()) {
+			if (localHero.GetUnitName() !== "npc_dota_hero_kunkka")
 				return;
-			}			
-			let safePosition = localHero.GetAbsOrigin();
-			
-			// Obtén las otras habilidades y el modificador
-			let Ability1 = localHero.GetAbilityByIndex(0);
-			let Ability2 = localHero.GetAbilityByIndex(1);
-			let Ability3 = localHero.GetAbilityByIndex(2);
-			let Ultimate = localHero.GetAbilityByIndex(5);
-			
 
+			let TidalWave = localHero.GetAbilityByIndex(4);
+			if (!TidalWave || localHero.HasModifier("modifier_item_invisibility_edge_windwalk") || localHero.HasModifier("modifier_item_silver_edge_windwalk")) {
+				return;
+			}
 
-			if (Engine.OnceAt(0.2)) {
-				const mousePos = Input.GetWorldCursorPos();
-				const enemies = localHero.GetHeroesInRadius(1000, Enum.TeamType.TEAM_ENEMY);
-				enemies.sort((a, b) => {
-					const distA = a.GetAbsOrigin().Distance(localHero.GetAbsOrigin());
-					const distB = b.GetAbsOrigin().Distance(localHero.GetAbsOrigin());
-					return distA - distB;
-				});
-				let target = null;
-				for (const enemy of enemies) {
-					const dist = enemy.GetAbsOrigin().Distance(mousePos);
-					if (dist <= 150 || target == null) {
-						target = enemy;
-					}
+			const localHeroHealthPercentage = (localHero.GetHealth() / localHero.GetMaxHealth()) * 100;
+			const localHeroPosition = localHero.GetAbsOrigin();
+			const enemyHeroes = EntitySystem.GetHeroesList().filter(hero => hero.GetTeamNum() !== localHero.GetTeamNum() && hero.IsAlive() && !hero.HasModifier("modifier_black_king_bar_immune") && localHeroPosition.Distance(hero.GetAbsOrigin()) <= 749);
+			const closestEnemyHero = enemyHeroes.reduce((closest, hero) => closest ? (localHeroPosition.Distance(hero.GetAbsOrigin()) < localHeroPosition.Distance(closest.GetAbsOrigin()) ? hero : closest) : hero, null);
+
+			if (closestEnemyHero && TidalWave.CanCast() && !tidalWaveCastAfterUltimate) {
+				const enemyHeroPosition = closestEnemyHero.GetAbsOrigin();
+				const Idealdirection = (enemyHeroPosition.sub(localHeroPosition)).Normalized();
+
+				//console.log("enemi = ",Idealdirection);
+				
+				if (localHeroHealthPercentage < 30) {
+					let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(300, 300, 0)));
+					TidalWave.CastPosition(IdealPosition);
+				} else {
+					let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(-300, -300, 0)));
+					TidalWave.CastPosition(IdealPosition);
 				}
+				tidalWaveCastAfterUltimate = true;
+			}
 
-				if (target != null) {
-					const localHeroPosition = localHero.GetAbsOrigin();
-					const EnemyHero = target;
-					const attackRange = localHero.GetAttackRange();
-					const enemyHeroPosition = EnemyHero.GetAbsOrigin();
-					const dist = localHeroPosition.Distance(enemyHeroPosition) - 50;
-					const attackSpeed = localHero.GetAttacksPerSecond();
-					const attackTime = 1 / attackSpeed;
-					const Idealdirection = (enemyHeroPosition.sub(localHeroPosition)).Normalized();
-					console.log("Prueba error",Idealdirection);
-					let Modifier1 = localHero.HasModifier("modifier_storm_spirit_overload");
-					let Modifier2 = localHero.HasModifier("modifier_storm_spirit_electric_rave");
-
-					// Comprueba si las otras habilidades están en cooldown o si el modificador está activo
-					if (!Ability1.IsInAbilityPhase() && !Ability2.IsInAbilityPhase() && !Modifier1 && !Modifier2) {
-						if (EnemyHero.IsAttacking() || EnemyHero.GetActivity() == Enum.GameActivity.DOTA_CAST_ABILITY_1) {
-							if (Engine.OnceAt(attackTime)) {
-								// Calcula una nueva posición detrás del enemigo
-								
-								let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(300, 300, 0)));
-								myPlayer.PrepareUnitOrders( Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,IdealPosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
-								//myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, EnemyHero, enemyHeroPosition, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero, false, true);
-							}
-						}
-					}
+			const ultimateAbility = localHero.GetAbilityByIndex(5);
+			if (ultimateAbility && ultimateAbility.IsActivated() && TidalWave.CanCast()) {
+				const currentTime = GameRules.GetGameTime();
+				if (currentTime - lastUltimateCastTime > 3.1) {
+					tidalWaveCastAfterUltimate = false;
+					lastUltimateCastTime = currentTime;
 				}
 			}
 		}
 
 	};
 
-	StornSpiritAbuse.OnScriptLoad = StornSpiritAbuse.OnGameStart = () => {
-	    localHero = EntitySystem.GetLocalHero();
-	    myPlayer = EntitySystem.GetLocalPlayer();
+	AutoStealKunkka.OnScriptLoad = AutoStealKunkka.OnGameStart = () => {
+		localPlayer = EntitySystem.GetLocalPlayer();
+		localHero = EntitySystem.GetLocalHero();
 	};
 
-	StornSpiritAbuse.OnGameEnd = () => {
-	    localHero = null;
-	    myPlayer = null;
+	AutoStealKunkka.OnGameEnd = () => {
+		localPlayer = null;
+		localHero = null;
+		TorrentStorm = null;
+		TidalWave = null;
+
 	};
 
-	RegisterScript(StornSpiritAbuse);
-
-
-
-
+	RegisterScript(AutoStealKunkka);
 `);
-
 /***/ })
 
 /******/ 	});
 /************************************************************************/
 /******/ 	
 /******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module can't be inlined because the eval devtool is used.
 /******/ 	var __webpack_exports__ = {};
-/******/ 	__webpack_modules__["./src/StornSpiritAbuse.ts"]();
+/******/ 	__webpack_modules__["./src/AutoStealKunkka.ts"]();
 /******/ 	
 /******/ })()
 ;
