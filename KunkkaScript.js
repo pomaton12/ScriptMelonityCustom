@@ -134,7 +134,7 @@ eval(`
 					const dist = localHeroPosition.Distance(enemyHeroPosition) - 50;
 					const attackSpeed = localHero.GetAttacksPerSecond();
 					const attackTime = 1 / attackSpeed;
-					const Idealdirection = (enemyHeroPosition.sub(localHeroPosition)).Normalized;
+					const Idealdirection = (enemyHeroPosition.sub(localHeroPosition)).Normalized();
 					
 					let Modifier1 = localHero.HasModifier("modifier_storm_spirit_overload");
 					let Modifier2 = localHero.HasModifier("modifier_storm_spirit_electric_rave");
