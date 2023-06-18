@@ -1,5 +1,5 @@
 /******/ (() => { // webpackBootstrap 
-/******/ 	var __webpack_modules__ = ({ 
+/******/ 	var __webpack_modules__ = ({
 
 /***/ "./src/StornSpiritAbuse.ts":
 /*!**********************************!*\
