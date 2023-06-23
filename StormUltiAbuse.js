@@ -167,7 +167,7 @@
 	}
 	
 		
-	function GetNearHeroInRadius(vector, radius = 1200) {
+	function GetNearHeroInRadius(vector, radius = 500) {
         let en = enemyList;
         if (en.length == 0)
             return undefined;
