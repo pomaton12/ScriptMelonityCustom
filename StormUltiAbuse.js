@@ -442,7 +442,7 @@
 						
 						if (menu_AbilitiesList[1]) {
                             
-                            if (electric_vortex && electric_vortex.IsExist() && !EnemiVortexPull && !Stunned && !InmuneMagic && !Hexxed) {
+                            if (electric_vortex && electric_vortex.IsExist() && !EnemiVortexPull && !Stunned && !InmuneMagic && !comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_HEXED) ){
 								
 								if (electric_vortex.CanCast()) {
 									if (AghanimsScepter || AghanimsPavise) {
