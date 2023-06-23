@@ -309,7 +309,7 @@
 						
 						let Stunned = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_STUNNED);
 						let InmuneMagic = comboTarget.HasModifier("modifier_black_king_bar_immune"); 
-						let Hexxed = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_HEXED);
+						let Hexxed = comboTarget.HasModifier("modifier_sheepstick_debuff"); 
 						let Silenced = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_SILENCED);
 						let Ethereo = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_ATTACK_IMMUNE);
 						
@@ -442,9 +442,9 @@
 						
 						if (menu_AbilitiesList[1]) {
                             
-                            if (electric_vortex && electric_vortex.IsExist() && !EnemiVortexPull && !Stunned && !InmuneMagic && !comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_HEXED) ){
+                            if (electric_vortex && electric_vortex.IsExist() && !EnemiVortexPull && !Stunned && !InmuneMagic ){
 								
-								if (electric_vortex.CanCast()) {
+								if (electric_vortex.CanCast() && !Hexxed) {
 									if (AghanimsScepter || AghanimsPavise) {
 										if (TargetInRadius(comboTarget, 470, localHero)) {
 											electric_vortex.CastNoTarget();
