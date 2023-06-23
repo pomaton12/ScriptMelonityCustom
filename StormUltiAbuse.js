@@ -28,7 +28,7 @@
 	'item_ethereal_blade', 'item_dagon_5', 'item_heavens_halberd', 'item_veil_of_discord', 'item_urn_of_shadows', 'item_spirit_vessel',
 	'item_medallion_of_courage', 'item_solar_crest', 'item_pipe', 'item_hood_of_defiance', 'item_eternal_shroud', 'item_lotus_orb',
 	'item_black_king_bar', 'item_harpoon', 'item_essence_ring', 'item_blade_mail', 'item_shivas_guard', 'item_crimson_guard',
-	'item_ancient_janggo', 'item_ex_machina', 'item_mask_of_madness'
+	'item_ancient_janggo', 'item_ex_machina', 'item_revenants_brooch', 'item_bloodstone'
 	];
     const abilities = ['storm_spirit_static_remnant', 'storm_spirit_electric_vortex', 'storm_spirit_overload', 'storm_spirit_ball_lightning'];
     const linkBreakers = [
@@ -51,8 +51,9 @@
 
 	let OrbUiEnabled = Menu.AddToggle(path_, 'OrbWalk Combo', true);
 	
-	let myOption = Menu.AddLabel(path_Ulti, 'Ulti Combo Settings');
-		myOption.SetImage('panorama/images/control_icons/gear_small_png.vtex_c');
+	//let myOption = Menu.AddLabel(path_Ulti, 'Ulti Combo Settings');
+	let BestUltiEnable = Menu.AddToggle(path_Ulti, 'Enable', false);
+
 	
 	let SafeManaUI = Menu.AddSlider(path_Ulti, 'Save Mana', 1, 500, 300)
         .OnChange(state => SafeManaUI = state.newValue)
@@ -247,6 +248,12 @@
 		} else{
 			UiEnabledRemnant.SetImage('panorama/images/hud/reborn/ult_cooldown_psd.vtex_c');
 		}		
+		if (BestUltiEnable.GetValue()) {
+			BestUltiEnable.SetImage('panorama/images/hud/reborn/ult_ready_psd.vtex_c');
+		} else{
+			BestUltiEnable.SetImage('panorama/images/hud/reborn/ult_cooldown_psd.vtex_c');
+		}			
+		
 		
 		if (localHero && isUiEnabled.GetValue()) {
 			
@@ -278,6 +285,7 @@
 				let electric_vortex = localHero.GetAbilityByIndex(1);
 				let overload = localHero.GetAbilityByIndex(2);
 				let Ultimate = localHero.GetAbilityByIndex(5);
+				let SheepstickHexx = localHero.GetItem('item_sheepstick', true);
 				
 				let target = GetNearHeroInRadius(Input.GetWorldCursorPos());
 
@@ -292,14 +300,37 @@
                 
 
 				if (Engine.OnceAt(0.2)) {
+					
+					let MyModBkb = localHero.HasModifier("modifier_black_king_bar_immune");
+					
+					if (comboTarget && comboTarget.HasModifier('modifier_item_blade_mail_reflect') && !MyModBkb) {
+						let bkbItemMy = localHero.GetItem('item_black_king_bar', true);
+						if(menu_ItemsList.IsEnabled('item_black_king_bar') && bkbItemMy && CustomCanCast(bkbItemMy) && TargetInRadius(comboTarget, 1000, localHero)){
+							bkbItemMy.CastNoTarget();
+						} else{
+							SendOrderMovePos(Input.GetWorldCursorPos(), localHero);
+							return;
+						}
+                    }
+					
+					if (comboTarget && comboTarget.HasModifier("modifier_item_lotus_orb_active") && !MyModBkb) {
+						let bkbItemMy = localHero.GetItem('item_black_king_bar', true);
+						if(menu_ItemsList.IsEnabled('item_black_king_bar') && bkbItemMy && CustomCanCast(bkbItemMy) && TargetInRadius(comboTarget, 1000, localHero)){
+							bkbItemMy.CastNoTarget();
+						} else{
+							myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, comboTarget, null, null, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero, false, true);	
+							return;
+						}
+                    }
 
 					if (comboTarget && comboTarget.IsExist()) {
+																		
 						const localHeroPosition = localHero.GetAbsOrigin();
 						const attackRange = localHero.GetAttackRange();
 						const enemyHeroPosition = comboTarget.GetAbsOrigin();
 						const dist = localHeroPosition.Distance(enemyHeroPosition)-58;
 						const dist2 = enemyHeroPosition.sub(localHeroPosition).Length()
-						
+												
 						let Modifier1 = localHero.HasModifier("modifier_storm_spirit_overload");
 						let Modifier2 = localHero.HasModifier("modifier_storm_spirit_electric_rave");
 						let AghanimsScepter = localHero.GetItem('item_ultimate_scepter', true);
@@ -309,22 +340,39 @@
 						
 						let Stunned = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_STUNNED);
 						let InmuneMagic = comboTarget.HasModifier("modifier_black_king_bar_immune"); 
-						let Hexxed = comboTarget.HasModifier("modifier_sheepstick_debuff"); 
+						let Hexxed = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_HEXED);
 						let Silenced = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_SILENCED);
 						let Ethereo = comboTarget.HasState(Enum.ModifierState.MODIFIER_STATE_ATTACK_IMMUNE);
 						
+						let UltimateSkyModifier = localHero.HasModifier("modifier_storm_spirit_ball_lightning"); 
+						let MyHeroModBkb = localHero.HasModifier("modifier_black_king_bar_immune");
+						let MyHeroModLotus = localHero.HasModifier("modifier_item_lotus_orb_active");
+						
 						// Nueva condición para activar BKB si el enemigo tiene activado Blade Mail
 						let BkBEnemiPrevention = localHero.GetHeroesInRadius(700, Enum.TeamType.TEAM_ENEMY);
-						if (BkBEnemiPrevention.length >= 3) {
-							let bkb = localHero.GetItem('item_black_king_bar', true);
-							if (bkb && bkb.CanCast() && localHero.HasModifier("modifier_black_king_bar_immune") === false) {
-								bkb.CastNoTarget();
+						
+						if (menu_ItemsList.IsEnabled('item_black_king_bar') ) {
+							if (BkBEnemiPrevention.length >= 3) {
+								let bkb = localHero.GetItem('item_black_king_bar', true);
+								if (bkb && CustomCanCast(bkb) && !MyHeroModBkb && !MyHeroModLotus) {
+									bkb.CastNoTarget();
+								}
 							}
 						}
+						
+						if (menu_ItemsList.IsEnabled('item_lotus_orb') ) {
+							if (BkBEnemiPrevention.length >= 3) {
+								let Lotus = localHero.GetItem('item_lotus_orb', true);
+								if (Lotus && CustomCanCast(Lotus) && !MyHeroModBkb  && !MyHeroModLotus) {
+									Lotus.CastTarget(localHero);
+								}
+							}
+						}						
+						
 						 //
 						let isUltimateCasting = false; // Variable de bloqueo
 
-						if (localHero.GetMana() > SafeManaUI && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
+						if (localHero.GetMana() > 300 && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
 							if (CastDistanceulTI > dist && dist > attackRange ) {	
 								isUltimateCasting = true; // Bloqueamos el lanzamiento del ultimate
 
@@ -356,6 +404,8 @@
 							}
 						}
 						
+						
+						
 						let [linken, mirror] = [comboTarget.GetItem('item_sphere', true), comboTarget.GetItem('item_mirror_shield', false)];
                         if (linken && linken.CanCast() || mirror && mirror.CanCast()) {
                             let linkenBrokItems = menu_LinkensItems.GetValue();
@@ -369,23 +419,54 @@
                                 }
                             }
                         }
+						
+						
+
 						let CastVortex = false;
 						if (AghanimsScepter || AghanimsPavise) {
 
 							let enemiesInVortexRange = localHero.GetHeroesInRadius(470, Enum.TeamType.TEAM_ENEMY);
-							if (enemiesInVortexRange.length > 2 && electric_vortex && electric_vortex.CanCast()) {
+							if (enemiesInVortexRange.length > 2 && electric_vortex && electric_vortex.CanCast() && !UltimateSkyModifier) {
 								electric_vortex.CastNoTarget();
 								CastVortex = true;
 							}
 						}
 						
-						
-						if (menu_ItemsList.IsEnabled('item_sheepstick') ) { 
-							let Sheepstick = localHero.GetItem('item_sheepstick', true);
-							if (Sheepstick && CustomCanCast(Sheepstick) && !EnemiVortexPull  && !Stunned && !InmuneMagic && !Hexxed) { 
-								Sheepstick.CastTarget(comboTarget);
+						if (menu_ItemsList.IsEnabled('item_orchid') ) { 
+							let Orchid = localHero.GetItem('item_orchid', true);
+							if (Orchid && CustomCanCast(Orchid) && !EnemiVortexPull  && !Stunned && !InmuneMagic && !Hexxed  && !Silenced) { 
+								if (TargetInRadius(comboTarget, 900, localHero)) {
+									Orchid.CastTarget(comboTarget);
+								}
 							}
 						}
+						
+
+						
+						if (menu_ItemsList.IsEnabled('item_bloodthorn') ) { 
+							let Bloodthorn = localHero.GetItem('item_bloodthorn', true);
+							if (Bloodthorn && CustomCanCast(Bloodthorn) && !EnemiVortexPull  && !Stunned && !InmuneMagic && !Hexxed && !Silenced) { 
+								if (TargetInRadius(comboTarget, 900, localHero)) {
+									Bloodthorn.CastTarget(comboTarget);								
+								}
+							}
+						}
+						
+						let CastHex = false;
+						if (menu_ItemsList.IsEnabled('item_sheepstick') ) {
+							let Sheepstick = localHero.GetItem('item_sheepstick', true);
+							if (Sheepstick && CustomCanCast(Sheepstick) && !EnemiVortexPull  && !Stunned && !InmuneMagic && !Hexxed && !UltimateSkyModifier) {
+								if (TargetInRadius(comboTarget, 600, localHero)) {
+									Sheepstick.CastTarget(comboTarget);
+									CastHex = true;
+								}
+							} else{
+								CastHex = true;
+							}
+						} else {
+							CastHex = true;
+						}
+						
 						
 						if (menu_ItemsList.IsEnabled('item_nullifier') ) { 
 							let Nullifier = localHero.GetItem('item_nullifier', true);
@@ -393,27 +474,77 @@
 								Nullifier.CastTarget(comboTarget);
 							}
 						}
-						
-						if (menu_ItemsList.IsEnabled('item_orchid') ) { 
-							let Orchid = localHero.GetItem('item_orchid', true);
-							if (Orchid && CustomCanCast(Orchid) && !EnemiVortexPull  && !Stunned && !InmuneMagic && !Hexxed  && !Silenced) { 
-								Orchid.CastTarget(comboTarget);
-							}
-						} 
-						
-						if (menu_ItemsList.IsEnabled('item_bloodthorn') ) { 
-							let Bloodthorn = localHero.GetItem('item_bloodthorn', true);
-							if (Bloodthorn && CustomCanCast(Bloodthorn) && !EnemiVortexPull  && !Stunned && !InmuneMagic && !Hexxed && !Silenced) { 
-								Bloodthorn.CastTarget(comboTarget);
-							}
-						}
+					
 							
 						if (menu_ItemsList.IsEnabled('item_shivas_guard') ) { 
 							let Shivas = localHero.GetItem('item_shivas_guard', true);
 							if (Shivas && CustomCanCast(Shivas) && !InmuneMagic && !Hexxed ) { 
-								Shivas.CastNoTarget();
+								if (TargetInRadius(comboTarget, 500, localHero)) {
+									Shivas.CastNoTarget();
+								}
 							}
 						}
+						
+						
+						if (menu_ItemsList.IsEnabled('item_revenants_brooch') ) { 
+							let Revenants = localHero.GetItem('item_revenants_brooch', true);
+							let RevenantsMod = localHero.HasModifier("modifier_item_revenants_brooch_counter");
+							if (Revenants && CustomCanCast(Revenants) && !InmuneMagic && !RevenantsMod) { 
+								if (TargetInRadius(comboTarget, 480, localHero)) {
+									Revenants.CastNoTarget();
+								}
+							}
+						}
+
+						if (menu_ItemsList.IsEnabled('item_mjollnir') ) { 
+							let Mjollnir = localHero.GetItem('item_mjollnir', true);
+							if (Mjollnir && CustomCanCast(Mjollnir) && !InmuneMagic ) { 
+								if (TargetInRadius(comboTarget, 500, localHero)) {
+									Mjollnir.CastTarget(localHero);
+								}
+							}
+						}						
+						
+
+						if (menu_ItemsList.IsEnabled('item_bullwhip') ) { 
+							let Bullwhip = localHero.GetItem('item_bullwhip', false);
+							if (Bullwhip && CustomCanCast(Bullwhip) && !InmuneMagic && comboTarget.IsRunning() && !Hexxed && !EnemiVortexPull && electric_vortex && !electric_vortex.CanCast()) { 
+								if (TargetInRadius(comboTarget, 850, localHero)) {
+									Bullwhip.CastTarget(comboTarget);
+								}
+							}
+						}
+						
+						//'item_diffusal_blade', 'item_disperser'
+						if (menu_ItemsList.IsEnabled('item_diffusal_blade') ) { 
+							let Diffusal = localHero.GetItem('item_diffusal_blade', true);
+							if (Diffusal && CustomCanCast(Diffusal) && !InmuneMagic && comboTarget.IsRunning() && !Hexxed && !EnemiVortexPull && electric_vortex && !electric_vortex.CanCast()) { 
+								if (TargetInRadius(comboTarget, 600, localHero)) {
+									Diffusal.CastTarget(comboTarget);
+								}
+							}
+						}
+						
+						if (menu_ItemsList.IsEnabled('item_disperser') ) { 
+							let Disperser = localHero.GetItem('item_disperser', true);
+							if (Disperser && CustomCanCast(Disperser) && !InmuneMagic && comboTarget.IsRunning() && !Hexxed && !EnemiVortexPull && electric_vortex && !electric_vortex.CanCast()) { 
+								if (TargetInRadius(comboTarget, 600, localHero)) {
+									Disperser.CastTarget(comboTarget);
+								}
+							}
+						}
+						
+							
+						if (menu_ItemsList.IsEnabled('item_bloodstone') ) { 
+							let Bloodstone = localHero.GetItem('item_bloodstone', true);
+							if (Bloodstone && CustomCanCast(Bloodstone) && !InmuneMagic && !Hexxed ) { 
+								if (TargetInRadius(comboTarget, 480, localHero)) {
+									myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET,null,null,Bloodstone,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
+
+								}
+							}
+						}						
+						
 						
 						if (menu_ItemsList.IsEnabled('item_refresher') ) { 
 							let RefresherOrb = localHero.GetItem('item_refresher', true);
@@ -440,11 +571,12 @@
 							}
                         }
 						
-						if (menu_AbilitiesList[1]) {
-                            
-                            if (electric_vortex && electric_vortex.IsExist() && !EnemiVortexPull && !Stunned && !InmuneMagic ){
+						//console.log("Vyce = ", SheepstickHexx);
+						if (SheepstickHexx === null) {
+							if (menu_AbilitiesList[1]) {
 								
-								if (electric_vortex.CanCast() && !Hexxed) {
+								if (CastHex && !Hexxed && electric_vortex && electric_vortex.IsExist() && electric_vortex.CanCast() && !EnemiVortexPull && !Stunned && !InmuneMagic && !UltimateSkyModifier){
+									
 									if (AghanimsScepter || AghanimsPavise) {
 										if (TargetInRadius(comboTarget, 470, localHero)) {
 											electric_vortex.CastNoTarget();
@@ -460,15 +592,43 @@
 											}
 										}
 									}
-								} else {
+								} else{
 									CastVortex = true;
 								}
-							} else{
+							} else {
 								CastVortex = true;
 							}
-                        } else {
-							CastVortex = true;
+							
+						} else {
+							if (menu_AbilitiesList[1]) {
+								
+								if (CastHex && !Hexxed && electric_vortex && electric_vortex.IsExist() && electric_vortex.CanCast() && SheepstickHexx && !SheepstickHexx.CanCast() && !EnemiVortexPull && !Stunned && !InmuneMagic && !UltimateSkyModifier){
+									
+									if (AghanimsScepter || AghanimsPavise) {
+										if (TargetInRadius(comboTarget, 470, localHero)) {
+											electric_vortex.CastNoTarget();
+											CastVortex = true;
+										}
+									}else {
+										if (TargetInRadius(comboTarget, 300, localHero)) {
+											electric_vortex.CastTarget(comboTarget);
+											CastVortex = true;
+										} else {
+											if (!comboTarget.IsRunning()) {
+												SendOrderMovePos(comboTarget.GetAbsOrigin(), localHero);
+											}
+										}
+									}
+								} else{
+									CastVortex = true;
+								}
+							} else {
+								CastVortex = true;
+							}
 						}
+
+						
+						//console.log("Hex ", Hexxed);
 						
 						if (menu_AbilitiesList[2]) {
                             
@@ -484,19 +644,20 @@
 						const Idealdirection = (enemyHeroPosition.sub(localHeroPosition)).Normalized();
 
 						// Comprueba si las otras habilidades están en cooldown o si el modificador está activo
-						if (localHero.GetMana() > SafeManaUI && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
+						if(BestUltiEnable.GetValue()){
+							if (localHero.GetMana() > SafeManaUI && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
 
-							if (!static_remnant.IsInAbilityPhase() && !electric_vortex.IsInAbilityPhase() && !Modifier1 && !Modifier2) {
-								
-								let EnemiPrevention = localHero.GetHeroesInRadius(480, Enum.TeamType.TEAM_ENEMY);
+								if (!static_remnant.IsInAbilityPhase() && !electric_vortex.IsInAbilityPhase() && !Modifier1 && !Modifier2) {
+									
+									let EnemiPrevention = localHero.GetHeroesInRadius(480, Enum.TeamType.TEAM_ENEMY);
 
-								if (comboTarget.IsAttacking() || EnemiPrevention.length >= 3) {
-									// Calcula una nueva posición detrás del enemigo									
-									let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(DistanceCastUI, DistanceCastUI, 0)));
-									myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,IdealPosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
+									if (comboTarget.IsAttacking() || EnemiPrevention.length >= 3) {
+										// Calcula una nueva posición detrás del enemigo									
+										let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(DistanceCastUI, DistanceCastUI, 0)));
+										myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,IdealPosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
+									}
 								}
 							}
-
 						}
 						
 						let [order, target, pos] = [Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, comboTarget, comboTarget.GetAbsOrigin()];
