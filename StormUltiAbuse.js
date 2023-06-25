@@ -8,12 +8,21 @@
 /***/ (() => {
 
 	const StornSpiritAbuse = {};
+	
+	const PANEL_WIDTH = 65;
+	const PANEL_HEIGHT = 28;
+	let panelX = Math.floor(Renderer.GetScreenSize()[0] / 2) - Math.floor(PANEL_WIDTH / 2);
+	let panelY = Math.floor(Renderer.GetScreenSize()[1] / 2) - Math.floor(PANEL_HEIGHT / 2);
+	let isDragging = false;
+	let dragOffsetX = 0;
+	let dragOffsetY = 0;
 
 	let localHero = null;
 	let myPlayer = null;
 	let comboTarget = null;
 	let particle = null;
 	let enemyList = [];
+	let lastUltimateTime = 0;
 
 	const path_ = ["Custom Scripts","Heroes", "Intelligence", "Storm Spirit"];
 	const path_Ulti = ["Custom Scripts","Heroes", "Intelligence", "Storm Spirit","Agresive Best Ulti"];
@@ -50,9 +59,12 @@
 	let menu_LinkensItems = CreatePrioritySelect([...path_, 'Linkens Breaker Settings'], 'Linkens Breaker', linkBreakers, true);
 
 	let OrbUiEnabled = Menu.AddToggle(path_, 'OrbWalk Combo', true);
+	let BestPostCastUI = Menu.AddToggle(path_, 'Calculator', true).SetImage('panorama/images/spellicons/storm_spirit_ball_lightning.vtex_c');
+	
+	
+	let BestUltiEnable = Menu.AddToggle(path_Ulti, 'Enable', false);
 	
 	//let myOption = Menu.AddLabel(path_Ulti, 'Ulti Combo Settings');
-	let BestUltiEnable = Menu.AddToggle(path_Ulti, 'Enable', false);
 
 	
 	let SafeManaUI = Menu.AddSlider(path_Ulti, 'Save Mana', 1, 500, 300)
@@ -60,7 +72,7 @@
 		.SetImage('panorama/images/status_icons/ability_manacost_icon_psd.vtex_c')
         .GetValue();
 		
-	let DistanceCastUI = Menu.AddSlider(path_Ulti, 'Save Range in combo', 1, 350, 300)
+	let DistanceCastUI = Menu.AddSlider(path_Ulti, 'Save Range in combo', 1, 200, 100)
 		.OnChange(state => DistanceCastUI = state.newValue)
 		.SetImage('panorama/images/emoticons/teamfancontent/season_4/8261882/emoticon1_png.vtex_c')
 		.GetValue();
@@ -426,7 +438,7 @@
 						if (AghanimsScepter || AghanimsPavise) {
 
 							let enemiesInVortexRange = localHero.GetHeroesInRadius(470, Enum.TeamType.TEAM_ENEMY);
-							if (enemiesInVortexRange.length > 2 && electric_vortex && electric_vortex.CanCast() && !UltimateSkyModifier) {
+							if (enemiesInVortexRange.length > 1 && electric_vortex && electric_vortex.CanCast() && !UltimateSkyModifier) {
 								electric_vortex.CastNoTarget();
 								CastVortex = true;
 							}
@@ -578,10 +590,26 @@
 								if (CastHex && !Hexxed && electric_vortex && electric_vortex.IsExist() && electric_vortex.CanCast() && !EnemiVortexPull && !Stunned && !InmuneMagic && !UltimateSkyModifier){
 									
 									if (AghanimsScepter || AghanimsPavise) {
-										if (TargetInRadius(comboTarget, 470, localHero)) {
-											electric_vortex.CastNoTarget();
-											CastVortex = true;
+										if (TargetInRadius(comboTarget, 475, localHero)) {
+											let enemyHeroes = comboTarget.GetHeroesInRadius(650, Enum.TeamType.TEAM_ENEMY);
+											let posbesttt = BestPosition(enemyHeroes, 475);
+											if(posbesttt && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && localHero.GetMana() > 500 && enemyHeroes.length > 1 ){
+												if (Engine.OnceAt(0.2)){
+													Ultimate.CastPosition(posbesttt);
+												}
+												//electric_vortex.CastNoTarget();
+												//CastVortex = true;												
+											}else{
+												electric_vortex.CastNoTarget();
+												CastVortex = true;	
+											}
+											
+										}else {
+											if (!comboTarget.IsRunning()) {
+												SendOrderMovePos(comboTarget.GetAbsOrigin(), localHero);
+											}
 										}
+											
 									}else {
 										if (TargetInRadius(comboTarget, 300, localHero)) {
 											electric_vortex.CastTarget(comboTarget);
@@ -605,10 +633,26 @@
 								if (CastHex && !Hexxed && electric_vortex && electric_vortex.IsExist() && electric_vortex.CanCast() && SheepstickHexx && !SheepstickHexx.CanCast() && !EnemiVortexPull && !Stunned && !InmuneMagic && !UltimateSkyModifier){
 									
 									if (AghanimsScepter || AghanimsPavise) {
-										if (TargetInRadius(comboTarget, 470, localHero)) {
-											electric_vortex.CastNoTarget();
-											CastVortex = true;
-										}
+										if (TargetInRadius(comboTarget, 475, localHero)) {
+											let enemyHeroes = localHero.GetHeroesInRadius(650, Enum.TeamType.TEAM_ENEMY);
+											let posbesttt = BestPosition(enemyHeroes, 475);
+											if(posbesttt && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && localHero.GetMana() > 500 && enemyHeroes.length > 1 ){
+												if (Engine.OnceAt(0.2)){
+													Ultimate.CastPosition(posbesttt);
+												}
+												//electric_vortex.CastNoTarget();
+												//CastVortex = true;												
+											}else{
+												electric_vortex.CastNoTarget();
+												CastVortex = true;	
+											}
+											
+										} else {
+											if (!comboTarget.IsRunning()) {
+												SendOrderMovePos(comboTarget.GetAbsOrigin(), localHero);
+											}
+										}										
+										
 									}else {
 										if (TargetInRadius(comboTarget, 300, localHero)) {
 											electric_vortex.CastTarget(comboTarget);
@@ -644,6 +688,7 @@
 						const Idealdirection = (enemyHeroPosition.sub(localHeroPosition)).Normalized();
 
 						// Comprueba si las otras habilidades están en cooldown o si el modificador está activo
+						
 						if(BestUltiEnable.GetValue()){
 							if (localHero.GetMana() > SafeManaUI && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
 
@@ -652,9 +697,12 @@
 									let EnemiPrevention = localHero.GetHeroesInRadius(480, Enum.TeamType.TEAM_ENEMY);
 
 									if (comboTarget.IsAttacking() || EnemiPrevention.length >= 3) {
-										// Calcula una nueva posición detrás del enemigo									
-										let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(DistanceCastUI, DistanceCastUI, 0)));
-										myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,IdealPosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
+										// Calcula una nueva posición detrás del enemigo	
+										if (GameRules.GetGameTime() - lastUltimateTime >= 2.5) {
+											let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(DistanceCastUI, DistanceCastUI, 0)));
+											myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,IdealPosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
+											lastUltimateTime = GameRules.GetGameTime();
+										}
 									}
 								}
 							}
@@ -709,6 +757,80 @@
 					}
 				}
 				
+			}
+			
+			if (BestPostCastUI.GetValue()) {
+				const ultimateSS = localHero.GetAbilityByIndex(5);
+
+				if (ultimateSS && ultimateSS.GetLevel() > 0) {
+					// Obtener la posición del mouse
+					const mouseP = Input.GetWorldCursorPos();
+					const mousePos = Input.GetCursorPos();
+					const heroPos = localHero.GetAbsOrigin();
+					const distance = heroPos.Distance(mouseP);
+
+					// Calcular el costo de maná por distancia recorrida
+					const manaMax = localHero.GetMaxMana();				
+					const manaCost = Math.floor(25.0 + ((manaMax * 0.075) + ((distance / 100.0) * (10.0 + (0.65 * (manaMax / 100.0))))));
+					let manaActual = Math.floor(localHero.GetMana()- manaCost);
+					
+					if(0 > manaActual){manaActual = 0;}
+					
+					// Calcular el daño por distancia recorrida
+					const damage = Math.floor((4 + (4 * localHero.GetAbilityByIndex(5).GetLevel())) * Math.floor(distance / 100));
+					console.log(localHero.GetAbilityByIndex(5).GetLevel());
+					
+					const valorPix  = Math.floor((manaActual * 53) / manaMax);
+					const font = Renderer.LoadFont("Tahoma", 10, Enum.FontWeight.EXTRABOLD);
+					const [x, y] = [panelX + 25, panelY + 4];
+
+					Renderer.SetDrawColor(0, 0, 0, 150);
+					Renderer.DrawFilledRect(panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT, 4);
+
+					Renderer.SetDrawColor(0, 0, 0, 255);
+					Renderer.DrawFilledRect(panelX + 5, panelY + 2, PANEL_WIDTH - 11, 11, 4);
+
+					Renderer.SetDrawColor(79, 113, 226, 255);
+					Renderer.DrawFilledRect(panelX + 6, panelY + 3,valorPix, 10, 4);
+					
+					Renderer.SetDrawColor(0, 0, 0, 255);
+					Renderer.DrawText(font, x-1, y-1, "" + manaActual, 1);
+					Renderer.DrawText(font, x+1, y+1, "" + manaActual, 1);
+					Renderer.DrawText(font, x-1, y, "" + manaActual, 1);
+					Renderer.DrawText(font, x+1, y, "" + manaActual, 1);
+
+					Renderer.SetDrawColor(255, 255, 255, 255);
+					Renderer.DrawText(font, x, y, "" + manaActual, 1);
+					Renderer.DrawText(font, x + 5, y + 12, "" + damage, 1);
+
+					let imageHandle = Renderer.LoadImage("panorama/images/hud/icon_kill_png.vtex_c");
+					Renderer.DrawImage(imageHandle, panelX + 7, panelY + 14, 12, 12);
+
+					// Detectar si se mantiene presionada la tecla Control
+					if (Input.IsKeyDown(Enum.ButtonCode.KEY_LCONTROL) ) {
+						if (Input.IsKeyDown(Enum.ButtonCode.MOUSE_LEFT) && Input.IsCursorInRect(panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT)) {
+							isDragging = true;
+							const mousePos = Input.GetCursorPos();
+							dragOffsetX = mousePos[0] - panelX;
+							dragOffsetY = mousePos[1] - panelY;
+						}
+					} else {
+						isDragging = false;
+					}
+
+					if (isDragging) {
+						const mousePos = Input.GetCursorPos();
+						panelX = mousePos[0] - dragOffsetX;
+						panelY = mousePos[1] - dragOffsetY;
+						panelX = Math.max(panelX, 0);
+						panelY = Math.max(panelY, 0);
+						panelX = Math.min(panelX, Renderer.GetScreenSize()[0] - PANEL_WIDTH);
+						panelY = Math.min(panelY, Renderer.GetScreenSize()[1] - PANEL_HEIGHT);
+					}
+					
+
+				}
+
 			}
 			
 		}
@@ -797,6 +919,37 @@
 			return 0;
 		}
 		return Math.max(mod.GetDieTime() - GameRules.GetGameTime(), 0);
+	}
+	// radius Rdio de Casteo
+	function BestPosition(EnemiInRadius, radius) {
+		if (!EnemiInRadius || EnemiInRadius.length <= 0) return null;
+		let enemyNum = EnemiInRadius.length;
+
+		if (enemyNum == 1) return EnemiInRadius[0].GetAbsOrigin();
+
+		let maxNum = 1;
+		let bestPos = EnemiInRadius[0].GetAbsOrigin();
+		for (let i = 0; i < enemyNum - 1; i++) {
+			for (let j = i + 1; j < enemyNum; j++) {
+				let pos1 = EnemiInRadius[i].GetAbsOrigin();
+				let pos2 = EnemiInRadius[j].GetAbsOrigin();
+				let mid = pos1.add(pos2).Scaled(0.5);
+
+				let heroesNum = 0;
+				for (let k = 0; k < enemyNum; k++) {
+					if (EnemiInRadius[k].IsPositionInRange( mid, radius, 0)) {
+						heroesNum++;
+					}
+				}
+
+				if (heroesNum > maxNum) {
+					maxNum = heroesNum;
+					bestPos = mid;
+				}
+			}
+		}
+
+		return bestPos;
 	}
 
 	StornSpiritAbuse.OnScriptLoad = StornSpiritAbuse.OnGameStart = () => {
