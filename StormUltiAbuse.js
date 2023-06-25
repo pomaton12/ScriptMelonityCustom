@@ -59,8 +59,7 @@
 	let menu_LinkensItems = CreatePrioritySelect([...path_, 'Linkens Breaker Settings'], 'Linkens Breaker', linkBreakers, true);
 
 	let OrbUiEnabled = Menu.AddToggle(path_, 'OrbWalk Combo', true);
-	let BestPostCastUI = Menu.AddToggle(path_, 'Calculator', true).SetImage('panorama/images/spellicons/storm_spirit_ball_lightning.vtex_c');
-	
+	let BestPostCastUI = Menu.AddToggle(path_, 'Calculator', true);
 	
 	let BestUltiEnable = Menu.AddToggle(path_Ulti, 'Enable', false);
 	
@@ -111,6 +110,8 @@
     Menu.SetImage(path_, 'panorama/images/heroes/icons/npc_dota_hero_storm_spirit_png.vtex_c');
 	Menu.GetFolder([...path_, 'Linkens Breaker Settings']).SetImage('panorama/images/hud/reborn/minimap_gemdrop_psd.vtex_c');
 	OrbUiEnabled.SetImage('panorama/images/hud/icon_kill_png.vtex_c');
+	BestUltiEnable.SetImage('panorama/images/spellicons/storm_spirit_ball_lightning.vtex_c');
+	
 	
 	function GetImagesPath(name, full) {
 		if (name.startsWith('item_')) {
@@ -778,8 +779,7 @@
 					
 					// Calcular el daño por distancia recorrida
 					const damage = Math.floor((4 + (4 * localHero.GetAbilityByIndex(5).GetLevel())) * Math.floor(distance / 100));
-					console.log(localHero.GetAbilityByIndex(5).GetLevel());
-					
+										
 					const valorPix  = Math.floor((manaActual * 53) / manaMax);
 					const font = Renderer.LoadFont("Tahoma", 10, Enum.FontWeight.EXTRABOLD);
 					const [x, y] = [panelX + 25, panelY + 4];
