@@ -23,7 +23,8 @@
 	let particle = null;
 	let enemyList = [];
 	let lastUltimateTime = 0;
-
+	
+	const path = ["Custom Scripts","Heroes", "Intelligence"];
 	const path_ = ["Custom Scripts","Heroes", "Intelligence", "Storm Spirit"];
 	const path_Ulti = ["Custom Scripts","Heroes", "Intelligence", "Storm Spirit","Agresive Best Ulti"];
 	const path_UltiCast = ["Custom Scripts","Heroes", "Intelligence", "Storm Spirit","Ulti CastDistance"];	
@@ -58,8 +59,8 @@
 				
 	let menu_LinkensItems = CreatePrioritySelect([...path_, 'Linkens Breaker Settings'], 'Linkens Breaker', linkBreakers, true);
 
-	let OrbUiEnabled = Menu.AddToggle(path_, 'OrbWalk Combo', true);
-	let BestPostCastUI = Menu.AddToggle(path_, 'Calculator', true);
+	let OrbUiEnabled = Menu.AddToggle(path_, 'OrbWalk Combo', false);
+	let BestPostCastUI = Menu.AddToggle(path_, 'Calculator', false);
 	
 	let BestUltiEnable = Menu.AddToggle(path_Ulti, 'Enable', false);
 	
@@ -84,35 +85,24 @@
 	
 	
 		
-	let UiEnabledRemnant = Menu.AddToggle(path_Remnant, 'Enable', true);
+	let UiEnabledRemnant = Menu.AddToggle(path_Remnant, 'Enable', false);
 		
 	let TimeAutoUI = Menu.AddSlider(path_Remnant, 'Work with minute...', 1, 50, 15)
         .OnChange(state => TimeAutoUI = state.newValue)
 		.SetImage('panorama/images/status_icons/clock_small_psd.vtex_c')
         .GetValue();
 		
-	//panorama/images/spellicons/storm_spirit/ti8_retro_immortal/storm_spirit_ball_lightning_orchid_retro_png.vtex_c
-	//panorama/images/emoticons/teamfancontent/season_4/8261882/emoticon1_png.vtex_c
-	//panorama/images/status_icons/ability_manacost_icon_psd.vtex_c MANA
-	//panorama/images/hud/icon_kill_png.vtex_c   HIT RUN
-	//panorama/images/hud/reborn/ult_ready_psd.vtex_c             ON
-	//panorama/images/hud/reborn/ult_cooldown_psd.vtex_c        OFF
-	//panorama/images/hud/reborn/minimap_gemdrop_psd.vtex_c    linken
-	//panorama/images/status_icons/clock_small_psd.vtex_c   clock
-	//panorama/images/control_icons/gear_small_png.vtex_c  setting
-	//panorama/images/spellicons/storm_spirit_static_remnant_png.vtex_c
-
 	Menu.GetFolder(path_Ulti).SetImage('panorama/images/spellicons/storm_spirit_ball_lightning_orchid_png.vtex_c');
 	Menu.GetFolder(path_UltiCast).SetImage('panorama/images/spellicons/storm_spirit/ti8_retro_immortal/storm_spirit_ball_lightning_orchid_retro_png.vtex_c');
 	Menu.GetFolder(path_Remnant).SetImage('panorama/images/spellicons/storm_spirit_static_remnant_png.vtex_c');
 	Menu.SetImage(['Custom Scripts', 'Heroes'], '~/menu/40x40/heroes.png');
-    Menu.SetImage(['Custom Scripts', 'Heroes', 'Intelligence'], '~/menu/40x40/Intelligence.png');
+    Menu.SetImage(path,'panorama/images/primary_attribute_icons/mini_primary_attribute_icon_intelligence_psd.vtex_c');
     Menu.SetImage(path_, 'panorama/images/heroes/icons/npc_dota_hero_storm_spirit_png.vtex_c');
 	Menu.GetFolder([...path_, 'Linkens Breaker Settings']).SetImage('panorama/images/hud/reborn/minimap_gemdrop_psd.vtex_c');
 	OrbUiEnabled.SetImage('panorama/images/hud/icon_kill_png.vtex_c');
-	BestUltiEnable.SetImage('panorama/images/spellicons/storm_spirit_ball_lightning.vtex_c');
+	BestPostCastUI.SetImage('panorama/images/spellicons/storm_spirit_ball_lightning_png.vtex_c');
 	
-	
+
 	function GetImagesPath(name, full) {
 		if (name.startsWith('item_')) {
 			return `panorama/images/items/${name.slice(5)}_png.vtex_c`;
@@ -385,7 +375,7 @@
 						 //
 						let isUltimateCasting = false; // Variable de bloqueo
 
-						if (localHero.GetMana() > 300 && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
+						if (localHero.GetMana() > 400 && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
 							if (CastDistanceulTI > dist && dist > attackRange ) {	
 								isUltimateCasting = true; // Bloqueamos el lanzamiento del ultimate
 
@@ -594,7 +584,7 @@
 										if (TargetInRadius(comboTarget, 475, localHero)) {
 											let enemyHeroes = comboTarget.GetHeroesInRadius(650, Enum.TeamType.TEAM_ENEMY);
 											let posbesttt = BestPosition(enemyHeroes, 475);
-											if(posbesttt && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && localHero.GetMana() > 500 && enemyHeroes.length > 1 ){
+											if(posbesttt && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && localHero.GetMana() > 600 && enemyHeroes.length > 1 ){
 												if (Engine.OnceAt(0.2)){
 													Ultimate.CastPosition(posbesttt);
 												}
@@ -637,7 +627,7 @@
 										if (TargetInRadius(comboTarget, 475, localHero)) {
 											let enemyHeroes = localHero.GetHeroesInRadius(650, Enum.TeamType.TEAM_ENEMY);
 											let posbesttt = BestPosition(enemyHeroes, 475);
-											if(posbesttt && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && localHero.GetMana() > 500 && enemyHeroes.length > 1 ){
+											if(posbesttt && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && localHero.GetMana() > 600 && enemyHeroes.length > 1 ){
 												if (Engine.OnceAt(0.2)){
 													Ultimate.CastPosition(posbesttt);
 												}
@@ -691,7 +681,7 @@
 						// Comprueba si las otras habilidades están en cooldown o si el modificador está activo
 						
 						if(BestUltiEnable.GetValue()){
-							if (localHero.GetMana() > SafeManaUI && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
+							if (localHero.GetMana() > 600 && Ultimate && Ultimate.IsExist() && Ultimate.CanCast() && menu_AbilitiesList[3]) {
 
 								if (!static_remnant.IsInAbilityPhase() && !electric_vortex.IsInAbilityPhase() && !Modifier1 && !Modifier2) {
 									
@@ -699,7 +689,7 @@
 
 									if (comboTarget.IsAttacking() || EnemiPrevention.length >= 3) {
 										// Calcula una nueva posición detrás del enemigo	
-										if (GameRules.GetGameTime() - lastUltimateTime >= 2.5) {
+										if (GameRules.GetGameTime() - lastUltimateTime >= 2) {
 											let IdealPosition = localHeroPosition.add(Idealdirection.mul(new Vector(DistanceCastUI, DistanceCastUI, 0)));
 											myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_POSITION,null,IdealPosition,Ultimate, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
 											lastUltimateTime = GameRules.GetGameTime();
