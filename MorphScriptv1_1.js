@@ -757,6 +757,13 @@
 										|| localHero.HasModifier('modifier_furion_sprout_entangle')
 										|| localHero.HasModifier('modifier_crystal_maiden_frostbite')
 										|| localHero.HasModifier('modifier_earth_spirit_geomagnetic_grip')
+										|| localHero.HasModifier('modifier_rod_of_atos_debuff')
+										|| localHero.HasModifier('modifier_gungnir_debuff')
+										|| localHero.HasModifier('modifier_item_diffusal_blade_slow')
+										|| localHero.HasModifier('modifier_rooted')
+										|| localHero.HasModifier('modifier_item_ethereal_blade_ethereal')
+										|| localHero.HasModifier('modifier_ogre_magi_ignite')
+										|| localHero.HasModifier('modifier_pugna_decrepify')
 										|| localHero.HasModifier('modifier_abaddon_frostmourne_debuff_bonus');
 										
 									if (silences){
@@ -959,7 +966,7 @@
 				const morph2 = localHero.GetAbilityByIndex(4);
 
 				if (localHero.IsStunned() || localHero.HasModifier("modifier_legion_commander_duel") || localHero.HasModifier("modifier_axe_berserkers_call") || localHero.HasModifier("modifier_faceless_void_chronosphere") || localHero.HasModifier("modifier_enigma_black_hole_pull") || localHero.GetHealth() <= localHero.GetMaxHealth() * HpThreshold) {
-					if (morph2 && morph2.IsCastable(myMana) && !morph2.GetToggleState()) {
+					if (morph2 && morph2.CanCast() && morph2.GetToggleState() == false) {
 						morph2.Toggle(true);
 					}
 				}
