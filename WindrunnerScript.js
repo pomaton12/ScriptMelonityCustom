@@ -445,7 +445,7 @@
 							let manta = localHero.GetItem('item_manta', true);
 
 							if (manta && CustomCanCast(manta) && !MyModSilverEdge) { 
-								if(MiscEnabled.GetValue()){
+								
 									const silences = localHero.HasModifier('modifier_orchid_malevolence_debuff')
 										|| localHero.HasModifier('modifier_bloodthorn_debuff')
 										|| localHero.HasModifier('modifier_skywrath_mage_ancient_seal')
@@ -457,18 +457,18 @@
 										|| localHero.HasModifier('modifier_silencer_last_word')
 										|| localHero.HasModifier('modifier_riki_smoke_screen')
 										|| localHero.HasModifier('modifier_disruptor_static_storm')
-										|| localHero.HasModifier('modifier_techies_blast_off')
+										|| localHero.HasModifier('modifier_techies_reactive_tazer_disarmed')
 										|| localHero.HasModifier('modifier_enigma_malefice')
 										|| localHero.HasModifier('modifier_bloodseeker_blood_bath')
 										|| localHero.HasModifier('modifier_dark_willow_bramble_maze')
 										|| localHero.HasModifier('modifier_dark_willow_cursed_crown')
-										|| localHero.HasModifier('modifier_puck_silence')
 										|| localHero.HasModifier('modifier_faceless_void_time_dilation_slow')
 										|| localHero.HasModifier('modifier_invoker_cold_snap')
-										|| localHero.HasModifier('modifier_templar_assassin_trap_meld')
+										|| localHero.HasModifier('modifier_templar_assassin_trap_slow')
+										|| localHero.HasModifier('modifier_silence')
 										|| localHero.HasModifier('modifier_furion_sprout_entangle')
 										|| localHero.HasModifier('modifier_crystal_maiden_frostbite')
-										|| localHero.HasModifier('modifier_earth_spirit_geomagnetic_grip')
+										|| localHero.HasModifier('modifier_earth_spirit_geomagnetic_grip_debuff')
 										|| localHero.HasModifier('modifier_rod_of_atos_debuff')
 										|| localHero.HasModifier('modifier_gungnir_debuff')
 										|| localHero.HasModifier('modifier_item_diffusal_blade_slow')
@@ -479,16 +479,12 @@
 										|| localHero.HasModifier('modifier_abaddon_frostmourne_debuff_bonus');
 										
 									if (silences){
-										let enemiesMorRange = localHero.GetHeroesInRadius(700, Enum.TeamType.TEAM_ENEMY);
+										let enemiesMorRange = localHero.GetHeroesInRadius(1000, Enum.TeamType.TEAM_ENEMY);
 										if(enemiesMorRange.length > 0) {									
 											myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET,null,null,manta,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
 										}
 									}
-								}else{
-									if (TargetInRadius(comboTarget, 350, localHero)) {
-										myPlayer.PrepareUnitOrders(Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET,null,null,manta,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_CURRENT_UNIT_ONLY, localHero);
-									}
-								}
+
 							}
 						}
 			
