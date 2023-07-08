@@ -830,11 +830,11 @@
 									// Agregar condición para evitar lanzar gale force si el enemigo tiene activado bkb
 									if (TarjetFocusfire.HasModifier("modifier_black_king_bar_immune") === false) {
 										gale_force.CastPosition(pushPosition);
-										//setTimeout(function() {}, 300);
+										setTimeout(function() {}, 300);
 									}
 									
 									// Nueva condición para activar windrun siempre
-									if (menu_AbilitiesList[2] && windrun && windrun.IsExist() && windrun.CanCast()) {
+									if (menu_AbilitiesList[2] && windrun && windrun.IsExist() && windrun.CanCast() && !TarjetFocusfire.HasModifier("modifier_windrunner_shackle_shot")) {
 										windrun.CastNoTarget();
 									}
 								}
