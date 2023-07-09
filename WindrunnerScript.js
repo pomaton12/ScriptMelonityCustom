@@ -737,18 +737,7 @@
 					}
 				}
 			}	
-			
-			// ===== Lanzamiento de items Nullifier =========
-			if (isUiEnabledShackle.GetValue()) {
-				if (GameRules.GetGameTime() / 60 >= EnemyUIShackle ) {
-					if (menu_AbilitiesList[0] && shackleshot && shackleshot.IsExist() && shackleshot.CanCast() && !MyModSilverEdge) {
-						let tarjetDetected = castShackleshot(localHero);
-						if(tarjetDetected!= null && !tarjetDetected.HasModifier("modifier_black_king_bar_immune")  && !tarjetDetected.HasModifier("modifier_item_lotus_orb_active")  && !tarjetDetected.HasState(Enum.ModifierState.MODIFIER_STATE_STUNNED) && !tarjetDetected.HasState(Enum.ModifierState.MODIFIER_STATE_HEXED)){
-							shackleshot.CastTarget(tarjetDetected);
-						}
-					}
-				}
-			}				
+				
 			
 			// ===== Funcion Opcion Panel =========
 			if (isUiEnabledDogde.GetValue()) {
